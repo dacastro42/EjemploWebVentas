@@ -3,9 +3,11 @@ using EjemploWebVentas.DTOs;
 using EjemploWebVentas.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EjemploWebVentas.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class VentasController : ControllerBase
