@@ -57,8 +57,8 @@ namespace EjemploWebVentas.Data
 
             modelBuilder.Entity<Venta>(e =>
             {
-                e.HasKey(x => x.IsVentas);
-                e.Property(x => x.IsVentas).HasColumnName("isVentas");
+                e.HasKey(x => x.idVentas);
+                e.Property(x => x.idVentas).HasColumnName("idVentas");
 
                 e.Property(x => x.VendedorId).HasColumnName("vendedor_id");
 

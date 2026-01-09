@@ -27,7 +27,7 @@ namespace EjemploWebVentas.Controllers
                 .OrderByDescending(v => v.FechaVenta)
                 .Select(v => new
                 {
-                    v.IsVentas,          // <-- antes IdVentas
+                    v.idVentas,          
                     v.FechaVenta,
                     v.Iva,
                     v.TotalVenta,
@@ -53,13 +53,13 @@ namespace EjemploWebVentas.Controllers
                 .Include(v => v.Vendedor)
                 .Include(v => v.Detalles)
                     .ThenInclude(d => d.Carro)
-                .FirstOrDefaultAsync(v => v.IsVentas == id);
+                .FirstOrDefaultAsync(v => v.idVentas == id);
 
             if (venta == null) return NotFound();
 
             var response = new
             {
-                venta.IsVentas,
+                venta.idVentas,
                 venta.FechaVenta,
                 venta.Iva,
                 venta.TotalVenta,
@@ -133,7 +133,7 @@ namespace EjemploWebVentas.Controllers
                 };
 
                 _db.Ventas.Add(venta);
-                await _db.SaveChangesAsync(); // aquí se genera venta.IsVentas (AUTO_INCREMENT)
+                await _db.SaveChangesAsync(); // aquí se genera venta.idVentas (AUTO_INCREMENT)
 
                 decimal subtotalVenta = 0m;
 
@@ -144,7 +144,7 @@ namespace EjemploWebVentas.Controllers
 
                     var detalle = new VentaDetalle
                     {
-                        VentaId = venta.IsVentas,
+                        VentaId = venta.idVentas,
                         CarroId = det.CarroId,
                         Cantidad = det.Cantidad,
                         PrecioUnitario = precio,
@@ -162,9 +162,9 @@ namespace EjemploWebVentas.Controllers
                 await _db.SaveChangesAsync();
                 await tx.CommitAsync();
 
-                return CreatedAtAction(nameof(GetById), new { id = venta.IsVentas }, new
+                return CreatedAtAction(nameof(GetById), new { id = venta.idVentas }, new
                 {
-                    venta.IsVentas,
+                    venta.idVentas,
                     venta.VendedorId,
                     venta.FechaVenta,
                     iva = venta.Iva,
@@ -194,7 +194,7 @@ namespace EjemploWebVentas.Controllers
                 orderby v.TotalVenta descending
                 select new
                 {
-                    v.IsVentas,
+                    v.idVentas,
                     v.FechaVenta,
                     v.TotalVenta,
                     v.VendedorId,
@@ -286,7 +286,7 @@ namespace EjemploWebVentas.Controllers
             var baseQuery =
                 from d in _db.VentaDetalles.AsNoTracking()
                 join v in _db.Ventas.AsNoTracking()
-                    on d.VentaId equals v.IsVentas
+                    on d.VentaId equals v.idVentas
                 select new { d, v };
 
             if (anio.HasValue)
@@ -320,6 +320,43 @@ namespace EjemploWebVentas.Controllers
                 top.Unidades,
                 top.TotalFacturado
             });
+        }
+
+        //GET /api/Ventas/vendedor/{vendedorId}
+        [HttpGet("Vendedor/{vendedorId:int}")]
+        public async Task<IActionResult> GetByVendedor(int vendedorId)
+        {
+            var ventas = await _db.Ventas
+        .AsNoTracking()
+        .Where(v => v.VendedorId == vendedorId)  // o vendedor_id en tu mapeo
+        .OrderByDescending(v => v.FechaVenta)
+        .Select(v => new
+        {
+            v.idVentas,
+            v.VendedorId,
+            v.FechaVenta,
+            v.TotalVenta,
+            v.Iva,
+            Detalles = v.Detalles.Select(d => new
+            {
+                d.IdVentaDetalles,
+                d.CarroId,
+                d.Cantidad,
+                d.PrecioUnitario,
+                d.Subtotal,
+                Carro = d.Carro == null ? null : new
+                {
+                    d.Carro.IdC,
+                    d.Carro.Marca,
+                    d.Carro.Modelo,
+                    d.Carro.Anio,
+                    d.Carro.PrecioC
+                }
+            })
+        })
+        .ToListAsync();
+
+    return Ok(ventas);
         }
         #endregion
     }

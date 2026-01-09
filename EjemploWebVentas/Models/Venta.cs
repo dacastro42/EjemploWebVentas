@@ -2,7 +2,7 @@
 {
     public class Venta
     {
-        public int IsVentas { get; set; }   // <- PK real en MySQL
+        public int idVentas { get; set; }   // <- PK real en MySQL
 
         public int VendedorId { get; set; }
         public Vendedor? Vendedor { get; set; }
