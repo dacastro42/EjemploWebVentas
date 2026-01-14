@@ -30,5 +30,7 @@ namespace EjemploWebVentas.Models
 
         // 1 vendedor -> muchas ventas
         public List<Venta> Ventas { get; set; } = new();
+
+        public string Rol { get; set; } = "VENDEDOR";
     }
 }

@@ -1,9 +1,10 @@
 ﻿using EjemploWebVentas.Data;
 using EjemploWebVentas.DTOs;
 using EjemploWebVentas.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace EjemploWebVentas.Controllers
 {
@@ -18,6 +19,7 @@ namespace EjemploWebVentas.Controllers
         public VentasController(VentasDbContext db) => _db = db;
 
         // GET: api/Ventas
+        [Authorize(Roles = "ADMIN")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -45,6 +47,7 @@ namespace EjemploWebVentas.Controllers
         }
 
         // GET: api/Ventas/5
+        [Authorize(Roles = "ADMIN")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -95,6 +98,7 @@ namespace EjemploWebVentas.Controllers
 
         // POST: api/Ventas
         //falta agregar impuestos 
+        [Authorize(Roles = "VENDEDOR,ADMIN")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] VentaCreateDto dto)
         {
@@ -184,6 +188,7 @@ namespace EjemploWebVentas.Controllers
 
         #region Consultas
         // GET: api/Ventas/reportes/mayor-venta
+        [Authorize(Roles = "ADMIN")]
         [HttpGet("reportes/mayor-venta")]
         public async Task<IActionResult> MayorVenta()
         {
@@ -214,6 +219,7 @@ namespace EjemploWebVentas.Controllers
 
 
         // GET: api/Ventas/reportes/vendedor-top?anio=2025&mes=12
+        [Authorize(Roles = "ADMIN")]
         [HttpGet("reportes/vendedor-top")]
         public async Task<IActionResult> VendedorTop([FromQuery] int? anio, [FromQuery] int? mes)
         {
@@ -254,6 +260,7 @@ namespace EjemploWebVentas.Controllers
 
 
         // GET: api/Ventas/reportes/total-mes?anio=2025&mes=12
+        [Authorize(Roles = "ADMIN")]
         [HttpGet("reportes/total-mes")]
         public async Task<IActionResult> TotalMes([FromQuery] int anio, [FromQuery] int mes)
         {
@@ -279,6 +286,7 @@ namespace EjemploWebVentas.Controllers
         }
 
         // GET: api/Ventas/reportes/carro-mas-vendido?anio=2025&mes=12
+        [Authorize(Roles = "ADMIN")]
         [HttpGet("reportes/carro-mas-vendido")]
         public async Task<IActionResult> CarroMasVendido([FromQuery] int? anio, [FromQuery] int? mes)
         {
@@ -323,9 +331,16 @@ namespace EjemploWebVentas.Controllers
         }
 
         //GET /api/Ventas/vendedor/{vendedorId}
+        [Authorize(Roles = "VENDEDOR,ADMIN")]
         [HttpGet("Vendedor/{vendedorId:int}")]
         public async Task<IActionResult> GetByVendedor(int vendedorId)
         {
+            // Si es vendedor, solo puede consultar sus propias ventas
+            if (User.IsInRole("VENDEDOR"))
+            {
+                var myId = int.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier)!);
+                if (vendedorId != myId) return Forbid();
+            }
             var ventas = await _db.Ventas
         .AsNoTracking()
         .Where(v => v.VendedorId == vendedorId)  // o vendedor_id en tu mapeo

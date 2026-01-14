@@ -44,7 +44,8 @@ public class AuthController : ControllerBase
         {
             new Claim(ClaimTypes.NameIdentifier, vendedor.IdV.ToString()),
             new Claim(ClaimTypes.Email, vendedor.EmailV),
-            new Claim(ClaimTypes.Name, $"{vendedor.Nombre1V} {vendedor.Apellido1V}")
+            new Claim(ClaimTypes.Name, $"{vendedor.Nombre1V} {vendedor.Apellido1V}"),
+            new Claim(ClaimTypes.Role, vendedor.Rol)
         };
 
         var token = new JwtSecurityToken(

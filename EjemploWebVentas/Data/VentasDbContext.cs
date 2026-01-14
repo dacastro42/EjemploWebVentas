@@ -39,6 +39,12 @@ namespace EjemploWebVentas.Data
                     .HasColumnType("timestamp")
                     .HasDefaultValueSql("CURRENT_TIMESTAMP")
                     .ValueGeneratedOnAdd();
+
+                e.Property(x => x.Rol)
+                    .HasColumnName("rol")
+                    .HasMaxLength(20)
+                    .HasDefaultValue("VENDEDOR")
+                    .IsRequired();
             });
 
             modelBuilder.Entity<Carro>(e =>
